@@ -140,6 +140,13 @@ describe("requests", () => {
     expect(api.tokenCalls()[0]!.url.toString()).toBe("https://api.example.test/oauth/token");
   });
 
+  it("an empty baseUrl (an unset environment variable) means the default", async () => {
+    const api = fakeApi(() => success({}));
+    await api.client({ baseUrl: "" }).shipping.coverage.get();
+    expect(api.apiCalls()[0]!.url.origin).toBe("https://api.getreeds.co");
+    expect(api.tokenCalls()[0]!.url.toString()).toBe("https://api.getreeds.co/oauth/token");
+  });
+
   it("gives every POST an Idempotency-Key, and none to a GET or PATCH", async () => {
     const api = fakeApi(() => success(delivery("dlv_1")));
     const reeds = api.client();

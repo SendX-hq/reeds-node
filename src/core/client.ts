@@ -127,7 +127,8 @@ export class Core {
   constructor(options: ClientOptions = {}) {
     this.clientId = options.clientId ?? env("REEDS_CLIENT_ID");
     this.clientSecret = options.clientSecret ?? env("REEDS_CLIENT_SECRET");
-    this.baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
+    // An empty string (an unset environment variable passed through) means the default too.
+    this.baseUrl = (options.baseUrl || DEFAULT_BASE_URL).replace(/\/+$/, "");
     this.mode = modeOf(this.clientId);
     this.timeout = options.timeout ?? DEFAULT_TIMEOUT;
     this.maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;

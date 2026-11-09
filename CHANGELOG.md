@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- An empty `baseUrl` (for example an unset environment variable passed through) now means the default, `https://api.getreeds.co`, instead of failing with "Invalid URL".
+
 ## 0.1.0 (2026-11-09)
 
 The first release, for the Shipping API. Install with `npm install reeds-sdk`.

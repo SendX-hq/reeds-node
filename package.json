@@ -1,0 +1,77 @@
+{
+  "name": "reeds",
+  "version": "0.1.0",
+  "description": "Official Node.js library for the Reeds APIs: quotes, deliveries, wallet, invoices and webhooks.",
+  "license": "MIT",
+  "author": "Reeds <support@getreeds.co>",
+  "homepage": "https://developer.getreeds.co",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SendX-hq/reeds-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SendX-hq/reeds-node/issues"
+  },
+  "keywords": [
+    "reeds",
+    "shipping",
+    "delivery",
+    "logistics",
+    "nigeria",
+    "api",
+    "sdk"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./shipping": {
+      "import": {
+        "types": "./dist/shipping.d.ts",
+        "default": "./dist/shipping.js"
+      },
+      "require": {
+        "types": "./dist/shipping.d.cts",
+        "default": "./dist/shipping.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
+    "generate": "node scripts/generate.mjs",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "openapi-typescript": "^7.13.0",
+    "tsup": "^9.0.0",
+    "typescript": "~5.9.3",
+    "vitest": "^5.1.0",
+    "yaml": "^2.9.1"
+  }
+}

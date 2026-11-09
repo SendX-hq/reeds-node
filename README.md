@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/SendX-hq/reeds-node/main/assets/reeds-logo.png" alt="Reeds" width="240"></p>
+
 # Reeds Node.js library
 
 The official Node.js library for the Reeds APIs. It covers the [Shipping API](https://developer.getreeds.co/docs/shipping/overview): quotes, deliveries, labels, the wallet, invoices, the sandbox and webhooks.

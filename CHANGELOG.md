@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2 (2026-11-10)
+
+- The README shows the Reeds logo.
+- Published through npm trusted publishing: CI proves where the package was built without a stored npm token.
+
 ## 0.1.1 (2026-11-10)
 
 - An empty `baseUrl` (for example an unset environment variable passed through) now means the default, `https://api.getreeds.co`, instead of failing with "Invalid URL".

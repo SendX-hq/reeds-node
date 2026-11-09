@@ -14,7 +14,7 @@ Requires Node.js 18 or later. No runtime dependencies.
 ## Install
 
 ```sh
-npm install reeds
+npm install reeds-sdk
 ```
 
 ## Quickstart
@@ -22,7 +22,7 @@ npm install reeds
 Get your client id and secret from **Dashboard → Developers**. Test credentials (`rci_test_...`, `rcs_test_...`) use Test mode: nothing real moves and no real money is spent.
 
 ```ts
-import Reeds from "reeds";
+import Reeds from "reeds-sdk";
 
 const reeds = new Reeds({
   clientId: process.env.REEDS_CLIENT_ID,
@@ -55,7 +55,7 @@ console.log(delivery.tracking_code, delivery.schedule);
 CommonJS works too:
 
 ```js
-const { Reeds } = require("reeds");
+const { Reeds } = require("reeds-sdk");
 ```
 
 Fields keep the API's names (`quote_id`, `tracking_code`), so the [API reference](https://developer.getreeds.co/api) reads the same as your code. Amounts are integers in kobo: `280000` is ₦2,800.
@@ -115,7 +115,7 @@ await writeFile(label.filename ?? "label.pdf", label.data);
 Every failure throws a `ReedsError` subclass. Branch on the class or on `error.code`, never on `error.message`, which Reeds can reword.
 
 ```ts
-import { InvalidRequestError, PaymentRequiredError, RateLimitError, ReedsError } from "reeds";
+import { InvalidRequestError, PaymentRequiredError, RateLimitError, ReedsError } from "reeds-sdk";
 
 try {
   await reeds.shipping.deliveries.create({ quote_id: quote.id });
@@ -171,7 +171,7 @@ Express:
 
 ```ts
 import express from "express";
-import Reeds, { WebhookSignatureError } from "reeds";
+import Reeds, { WebhookSignatureError } from "reeds-sdk";
 
 const reeds = new Reeds();
 const app = express();
@@ -203,7 +203,7 @@ app.post("/webhooks/reeds", express.raw({ type: "application/json" }), (req, res
 Next.js (App Router):
 
 ```ts
-import { webhooks } from "reeds";
+import { webhooks } from "reeds-sdk";
 
 export async function POST(request: Request) {
   const body = await request.text();

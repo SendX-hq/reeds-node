@@ -2,13 +2,13 @@ name: Release
 
 # Stages a release on npm when a tag vX.Y.Z is pushed. The tag must match
 # package.json. npm lets an automation token only STAGE a version: an owner of
-# `reeds` then publishes it with their 2FA, with `npm stage list` and
+# `reeds-sdk` then publishes it with their 2FA, with `npm stage list` and
 # `npm stage approve <stage-id>`, or on npmjs.com. The build and its provenance
 # come from here, never from a laptop. (0.1.0, the package's first version, had
 # to be published directly by an owner: npm can't stage a package that doesn't
 # exist yet.)
 #
-# Secret: NPM_TOKEN, a token of the company account that owns `reeds`.
+# Secret: NPM_TOKEN, a token of the company account that owns `reeds-sdk`.
 on:
   push:
     tags: ["v*.*.*"]
@@ -34,7 +34,16 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Skip a version that's already on npm
+        id: published
+        run: |
+          spec="$(node -p "require('./package.json').name")@$(node -p "require('./package.json').version")"
+          if npm view "$spec" version >/dev/null 2>&1; then
+            echo "$spec is already published; nothing to stage."
+            echo "already=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Stage the release (an owner approves it with 2FA)
+        if: steps.published.outputs.already != 'true'
         run: npm stage publish . --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

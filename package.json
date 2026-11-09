@@ -1,5 +1,5 @@
 {
-  "name": "reeds",
+  "name": "reeds-sdk",
   "version": "0.1.0",
   "description": "Official Node.js library for the Reeds APIs: quotes, deliveries, wallet, invoices and webhooks.",
   "license": "MIT",

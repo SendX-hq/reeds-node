@@ -2,7 +2,7 @@
 
 ## 0.1.0 (2026-11-09)
 
-The first release, for the Shipping API.
+The first release, for the Shipping API. Install with `npm install reeds-sdk`.
 
 - `reeds.shipping`: coverage, quotes, deliveries (create, list, get, update, book, mark ready, cancel, label), the wallet (get, fund, transactions), invoices (list, get, PDF) and the sandbox.
 - `reeds.webhooks`: signature verification, typed events, test events.

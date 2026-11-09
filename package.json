@@ -1,7 +1,7 @@
 {
   "name": "reeds-sdk",
-  "version": "0.1.2",
-  "description": "Official Node.js library for the Reeds APIs: quotes, deliveries, wallet, invoices and webhooks.",
+  "version": "0.1.3",
+  "description": "The official Node.js library for the Reeds APIs: one client for every Reeds service. Shipping: quotes, deliveries, labels, wallet, invoices and webhooks.",
   "license": "MIT",
   "author": "Reeds <support@getreeds.co>",
   "homepage": "https://developer.getreeds.co",
@@ -19,7 +19,10 @@
     "logistics",
     "nigeria",
     "api",
-    "sdk"
+    "sdk",
+    "typescript",
+    "webhooks",
+    "ecommerce"
   ],
   "type": "module",
   "engines": {

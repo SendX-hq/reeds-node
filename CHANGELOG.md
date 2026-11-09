@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3 (2026-11-10)
+
+- A fuller README: the services the library covers, every Shipping call, delivery statuses, webhook events, errors, retries and TypeScript use.
+- The wallet top-up example takes only `amount`, as the API does, and shows the `reference` that `wallet.funded` carries.
+
 ## 0.1.2 (2026-11-10)
 
 - The README shows the Reeds logo.

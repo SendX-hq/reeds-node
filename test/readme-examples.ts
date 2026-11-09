@@ -57,3 +57,47 @@ export function handle(body: string, header: string | null): void {
       break;
   }
 }
+
+// The richer README (0.1.3): every snippet below appears there.
+import type { Delivery, DeliveryStatus, Quote, QuoteRequest, ShippingEvent } from "../src/shipping";
+import { writeFile } from "node:fs/promises";
+
+export async function shippingGuide(): Promise<void> {
+  const reeds = new Reeds();
+  const quote = await reeds.shipping.quotes.create({
+    pickup: { name: "Tola Fabrics", phone: "08051234567", address: "23 Allen Avenue", area: "Ikeja", lga: "Ikeja", state: "Lagos" },
+    dropoff: { name: "Chinedu Eze", phone: "08098765432", address: "14 Admiralty Way", area: "Lekki Phase 1", lga: "Eti-Osa", state: "Lagos" },
+    package: { description: "2 pairs of sneakers", quantity: 1, weight_kg: 1.5 },
+  });
+  if (!quote.available) throw new Error(quote.reason.message);
+  console.log(quote.fee.total, quote.schedule);
+  const delivery = await reeds.shipping.deliveries.create({ quote_id: quote.id, reference: "ORDER-10045" });
+  const latest = await reeds.shipping.deliveries.get(delivery.id);
+  console.log(latest.status, latest.tracking_url);
+
+  const coverage = await reeds.shipping.coverage.get();
+  console.log(coverage);
+
+  const label = await reeds.shipping.deliveries.label(delivery.id);
+  await writeFile(label.filename ?? "label.pdf", label.data);
+
+  const wallet = await reeds.shipping.wallet.get();
+  console.log(wallet.balance);
+  const { payment_url, reference } = await reeds.shipping.wallet.fund({ amount: 5_000_000 });
+  console.log(payment_url, reference);
+  for await (const entry of reeds.shipping.wallet.listTransactions()) console.log(entry.type, entry.amount, entry.description);
+  const invoices = await reeds.shipping.invoices.list({ status: "issued" });
+  const pdf = await reeds.shipping.invoices.pdf(invoices.data[0]!.id!);
+  console.log(pdf.data.byteLength);
+
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), 5_000);
+  await reeds.shipping.deliveries.list({ limit: 10 }, { timeout: 10_000, maxRetries: 0, signal: controller.signal });
+}
+
+export function isDone(delivery: Delivery): boolean {
+  const final: DeliveryStatus[] = ["delivered", "cancelled"];
+  return final.includes(delivery.status);
+}
+
+export type ReadmeTypes = [Quote, QuoteRequest, ShippingEvent];

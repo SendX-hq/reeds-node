@@ -24,12 +24,12 @@ describe("reeds.shipping: every operation's request", () => {
     await s.deliveries.cancel("dlv_1", { reason: "Customer cancelled" });
     await s.deliveries.label("dlv_1");
     await s.wallet.get();
-    await s.wallet.fund({ amount: 500000, return_url: "https://shop.example/wallet" } as never);
+    await s.wallet.fund({ amount: 500000 });
     await s.wallet.listTransactions({ limit: 5 });
     await s.invoices.list({ status: "issued" });
     await s.invoices.get("inv_1");
     await s.invoices.pdf("inv_1");
-    await s.sandbox.fundWallet({ amount: 1000000 } as never);
+    await s.sandbox.fundWallet({ amount: 1000000 });
     await s.sandbox.advanceDelivery("dlv_1", { status: "delivered" } as never);
     await api.client().webhooks.sendTest({ type: "delivery.booked" } as never);
 
@@ -46,7 +46,7 @@ describe("reeds.shipping: every operation's request", () => {
       'POST /shipping/v1/deliveries/dlv_1/cancel {"reason":"Customer cancelled"}',
       "GET /shipping/v1/deliveries/dlv_1/label",
       "GET /shipping/v1/wallet",
-      'POST /shipping/v1/wallet/fund {"amount":500000,"return_url":"https://shop.example/wallet"}',
+      'POST /shipping/v1/wallet/fund {"amount":500000}',
       "GET /shipping/v1/wallet/transactions?limit=5",
       "GET /shipping/v1/invoices?status=issued",
       "GET /shipping/v1/invoices/inv_1",

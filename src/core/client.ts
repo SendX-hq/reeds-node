@@ -17,7 +17,7 @@ export type ClientOptions = {
   clientId?: string;
   /** Your client secret (`rcs_test_...` or `rcs_live_...`). Defaults to REEDS_CLIENT_SECRET. */
   clientSecret?: string;
-  /** Defaults to https://api.getreeds.co. Staging is https://api.staging.getreeds.co. */
+  /** Defaults to https://api.getreeds.co. */
   baseUrl?: string;
   /** Milliseconds to wait for a response before giving up on an attempt. Default 60 000. */
   timeout?: number;

@@ -14,7 +14,7 @@ spec/          copies of the APIs' OpenAPI specs, taken from sendx-api by the sy
 test/          unit tests (vitest), test/e2e (the real API in Test mode), test/smoke.mjs (the build on Node 18+)
 ```
 
-The design (rules every public Reeds API follows, the method names shared with the PHP and Python libraries) is in the SDK plan.
+The method names match the Reeds PHP and Python libraries, so code reads the same in each language.
 
 ## Checks
 

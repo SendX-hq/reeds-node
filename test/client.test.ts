@@ -131,13 +131,13 @@ describe("credentials and the token", () => {
 describe("requests", () => {
   it("sends the SDK's User-Agent, Accept and any default headers, to the base URL you set", async () => {
     const api = fakeApi(() => success({}));
-    await api.client({ baseUrl: "https://api.staging.getreeds.co/", defaultHeaders: { "X-Team": "ops" } }).shipping.coverage.get();
+    await api.client({ baseUrl: "https://api.example.test/", defaultHeaders: { "X-Team": "ops" } }).shipping.coverage.get();
     const [call] = api.apiCalls();
-    expect(call!.url.toString()).toBe("https://api.staging.getreeds.co/shipping/v1/coverage");
+    expect(call!.url.toString()).toBe("https://api.example.test/shipping/v1/coverage");
     expect(call!.headers["user-agent"]).toBe(`reeds-node/${VERSION} node/${process.version}`);
     expect(call!.headers.accept).toBe("application/json");
     expect(call!.headers["x-team"]).toBe("ops");
-    expect(api.tokenCalls()[0]!.url.toString()).toBe("https://api.staging.getreeds.co/oauth/token");
+    expect(api.tokenCalls()[0]!.url.toString()).toBe("https://api.example.test/oauth/token");
   });
 
   it("gives every POST an Idempotency-Key, and none to a GET or PATCH", async () => {

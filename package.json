@@ -1,6 +1,6 @@
 {
   "name": "reeds-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Official Node.js library for the Reeds APIs: quotes, deliveries, wallet, invoices and webhooks.",
   "license": "MIT",
   "author": "Reeds <support@getreeds.co>",

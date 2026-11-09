@@ -46,4 +46,5 @@ The sync-spec workflow opens a pull request when sendx-api deploys a changed spe
 ## Releasing
 
 1. Update `version` in package.json and `src/version.ts`, and the CHANGELOG.
-2. Merge to main, then push the tag `vX.Y.Z`. The release workflow publishes to npm with provenance.
+2. Merge to main, then push the tag `vX.Y.Z`. The release workflow builds, tests and stages the version on npm, with provenance.
+3. An owner of the npm package publishes the staged version with their 2FA: `npm stage list reeds`, then `npm stage approve <stage-id>` (or on npmjs.com).

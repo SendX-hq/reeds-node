@@ -58,6 +58,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/addresses/autocomplete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search addresses as a customer types
+         * @description Suggests places in Nigeria for what your customer has typed so far, for an address field that completes as they type. Pass the chosen suggestion's `place_id` to `GET /addresses/details` for the full address, or straight into a quote's `place_id`.
+         *
+         *     - Send a `session_token` of your own (a UUID works): one per address being typed, the same on every call while that customer types, and on the `GET /addresses/details` call that ends it. The whole search then counts as **one**. Start a new token for the next address.
+         *     - Results are restricted to Nigeria. At most 6 come back; an empty list means nothing matched.
+         *     - Call it from your server, as every live call is: your page calls your server, which calls Reeds. Show Google's attribution (the "Google" logo or text) next to the suggestions when they aren't on a Google map.
+         *     - Address search is free. In Test each account has an allowance of searches (50 to start; Reeds can raise it). In Live it is unlimited unless Reeds has set a monthly limit for the account, and Reeds can switch it off for an account. Past the allowance or the limit the answer is `403 ADDRESS_SEARCH_LIMIT_REACHED`; switched off, `403 ADDRESS_SEARCH_DISABLED`.
+         *     - Limited to 120 requests a minute on business accounts and 600 on platform accounts.
+         */
+        get: operations["autocompleteAddresses"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/addresses/details": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the address of a place
+         * @description Returns the full address of a place: a suggestion your customer chose from `GET /addresses/autocomplete`, or any Google place id in Nigeria. `lga` and `state` are what a quote needs, and `place_id` makes the spot exact.
+         *
+         *     - Send the search's `session_token` so this call ends that search instead of counting as another. Without one, the call is a search of its own.
+         *     - `precise` is `true` for a street address, building or business, and `false` for a whole area or road (its point is only the middle of it): ask your customer for the street when it is `false`.
+         *     - `lga` is `null` when Google doesn't name one; ask your customer, because a quote needs it.
+         */
+        get: operations["getAddressDetails"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/addresses/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Find the address at a map pin
+         * @description Returns the address nearest to a point in Nigeria, for a map where your customer drops a pin. Each call is one search.
+         *
+         *     - The answer is the address Google finds there, with its own coordinates. To deliver to the pin itself, send your pin's `latitude` and `longitude` in the quote, with this address as the text; to deliver to the address found, send its `place_id`.
+         *     - A point outside Nigeria is refused with `422 INVALID_REQUEST`; a point with no address near it gets `404 NOT_FOUND`.
+         *     - Show the pin on a Google map, as Google's terms require for its addresses.
+         */
+        get: operations["reverseGeocodeAddress"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/quotes": {
         parameters: {
             query?: never;
@@ -73,7 +147,7 @@ export interface paths {
          *
          *     - A quote lasts 24 hours and books one delivery. The price is locked: booking within 24 hours pays exactly the quoted total.
          *     - Reeds always prices the address. It looks the text up with Google Maps and, when the match is exact, prices from that spot. When Google is unsure (it has only the middle of a street or an estate, or had to drop part of the text) Reeds uses Google's point if it lies in the area or LGA you named, and otherwise prices from the centre of that area, from Reeds' own area data (the centre of the LGA when you sent no area). Riders use the street text and call the receiver for the exact spot. You get a plain price either way.
-         *     - Send `latitude` and `longitude` (your own map pin) or a Google `place_id` when you have them: the spot is then yours, and `area`, `lga` and `state` only name it.
+         *     - Send `latitude` and `longitude` (your own map pin) or a Google `place_id` when you have them: the spot is then yours, and `area`, `lga` and `state` only name it. The address search (`GET /addresses/autocomplete`) gives you a `place_id` with the `lga` and `state` to send.
          *     - `service` is `standard` within a state (a two-day range) and `interstate` between states (the route's promise in working days, 3 to 5 by default; see `GET /coverage` for the routes and their promises).
          *     - `schedule` is the promise if you book now. A delivery's own schedule is worked out when it is booked and ready, so a quote booked after the day's cut-off gets later dates. The price doesn't change.
          *     - `route.type` is `direct` (under 7 km: one rider, no hub), `via_hub` (collected into the nearest Reeds hub, then delivered) or `interstate` (collected into a hub in the pickup state, carried to a Reeds or partner hub in the drop-off state, and delivered from there). An inter-state route is priced per route, not by distance, so its `route.distance_km` is `null`.
@@ -811,7 +885,7 @@ export interface components {
          * @description Stable error code. Clients may see codes added over time.
          * @enum {string}
          */
-        ErrorCode: "INVALID_JSON" | "IDEMPOTENCY_KEY_REQUIRED" | "INVALID_REQUEST" | "UNAUTHENTICATED" | "TOKEN_EXPIRED" | "INSUFFICIENT_SCOPE" | "ACCOUNT_ON_HOLD" | "IP_NOT_ALLOWED" | "TEST_MODE_ONLY" | "NOT_FOUND" | "PICKUP_DATE_OUT_OF_RANGE" | "QUOTE_EXPIRED" | "QUOTE_ALREADY_USED" | "INSUFFICIENT_BALANCE" | "CREDIT_LIMIT_REACHED" | "ACTION_NOT_ALLOWED" | "CANCEL_NOT_ALLOWED" | "SHIPPER_REQUIRED" | "PARCEL_TOO_HEAVY" | "PARCEL_TOO_LARGE" | "PROHIBITED_ITEM" | "IDEMPOTENCY_KEY_REUSED" | "REQUEST_IN_PROGRESS" | "RATE_LIMITED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | (string & {});
+        ErrorCode: "INVALID_JSON" | "IDEMPOTENCY_KEY_REQUIRED" | "INVALID_REQUEST" | "UNAUTHENTICATED" | "TOKEN_EXPIRED" | "INSUFFICIENT_SCOPE" | "ACCOUNT_ON_HOLD" | "IP_NOT_ALLOWED" | "TEST_MODE_ONLY" | "NOT_FOUND" | "PICKUP_DATE_OUT_OF_RANGE" | "QUOTE_EXPIRED" | "QUOTE_ALREADY_USED" | "INSUFFICIENT_BALANCE" | "CREDIT_LIMIT_REACHED" | "ACTION_NOT_ALLOWED" | "CANCEL_NOT_ALLOWED" | "SHIPPER_REQUIRED" | "PARCEL_TOO_HEAVY" | "PARCEL_TOO_LARGE" | "PROHIBITED_ITEM" | "IDEMPOTENCY_KEY_REUSED" | "REQUEST_IN_PROGRESS" | "RATE_LIMITED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "ADDRESS_SEARCH_DISABLED" | "ADDRESS_SEARCH_LIMIT_REACHED" | (string & {});
         Contact: {
             /**
              * @description Contact name.
@@ -876,7 +950,7 @@ export interface components {
             lga: string;
             /** @example Lagos */
             state: string;
-            /** @description Google place id, if you have one. The place is then the spot. */
+            /** @description Google place id, if you have one (address search gives you one: `GET /addresses/autocomplete`, then `GET /addresses/details`). The place is then the spot. */
             place_id?: string;
             /** @description If you have them (for example from your own map pin), the pin is the spot. Send with `longitude`. */
             latitude?: number;
@@ -916,6 +990,71 @@ export interface components {
         CoverageEnvelope: components["schemas"]["SuccessEnvelope"] & {
             data?: components["schemas"]["Coverage"];
         };
+        PlaceSuggestion: {
+            /**
+             * @description Google place id. Pass it to `GET /addresses/details`, or as a quote's `place_id`.
+             * @example ChIJN1t_tDeuEmsRUsoyG83frY4
+             */
+            place_id: string;
+            /**
+             * @description The place itself, for the first line of a suggestion.
+             * @example 23 Allen Avenue
+             */
+            main_text: string;
+            /**
+             * @description Where it is, for the second line. Can be empty.
+             * @example Ikeja, Lagos, Nigeria
+             */
+            secondary_text: string;
+        };
+        PlaceSuggestionsEnvelope: components["schemas"]["SuccessEnvelope"] & {
+            data?: {
+                suggestions: components["schemas"]["PlaceSuggestion"][];
+            };
+        };
+        Place: {
+            /**
+             * @description Google place id. Send it as a quote's `place_id` to make the spot exact.
+             * @example ChIJN1t_tDeuEmsRUsoyG83frY4
+             */
+            place_id: string;
+            /**
+             * @description The place's name, or the start of its address.
+             * @example 23 Allen Avenue
+             */
+            name: string;
+            /**
+             * @description The full address as Google writes it. Works as a quote's `address` text.
+             * @example 23 Allen Ave, Allen, Ikeja 101233, Lagos, Nigeria
+             */
+            formatted_address: string;
+            /**
+             * @description The part of town people name (Ikeja, Lekki Phase 1), for a quote's `area`.
+             * @example Ikeja
+             */
+            area: string | null;
+            /**
+             * @description The local government area, for a quote's `lga`. `null` when Google doesn't name one.
+             * @example Ikeja
+             */
+            lga: string | null;
+            /**
+             * @description The state as Reeds spells it (`Lagos`, `FCT`), for a quote's `state`.
+             * @example Lagos
+             */
+            state: string;
+            /** @enum {string} */
+            country: "NG";
+            /** @example 6.6018 */
+            latitude: number;
+            /** @example 3.3515 */
+            longitude: number;
+            /** @description `true` for a street address, building or business; `false` for a whole area or road, whose point is only its middle. */
+            precise: boolean;
+        };
+        PlaceEnvelope: components["schemas"]["SuccessEnvelope"] & {
+            data?: components["schemas"]["Place"];
+        };
         Package: {
             /**
              * @description What it is. Screened for items Reeds can't carry (cash, weapons, drugs, hazardous goods, perishable food): `422 PROHIBITED_ITEM`.
@@ -947,17 +1086,17 @@ export interface components {
         /** @description All amounts are integers in kobo. */
         Fee: {
             /**
-             * @description The distance-tier price, in kobo.
+             * @description Within a state, the distance-tier price; between states, the route's price. In kobo.
              * @example 255000
              */
             delivery_fee: number;
             /**
-             * @description 7.5% VAT on the delivery fee, in kobo.
+             * @description 7.5% VAT on the delivery fee, in kobo. An inter-state delivery has none.
              * @example 19125
              */
             vat: number;
             /**
-             * @description What rounds the total up to the next NGN 50 (at least NGN 25 is kept as service charge). Carries no VAT. In kobo.
+             * @description What rounds the total up to the next NGN 50 (at least NGN 25 is kept as service charge). Carries no VAT. In kobo. An inter-state delivery has none: its total is the route's price.
              * @example 5875
              */
             service_charge: number;
@@ -1573,7 +1712,7 @@ export interface components {
                 "application/json": components["schemas"]["Error"];
             };
         };
-        /** @description The token lacks the scope, the account is on hold, a live token is used from an IP address that isn't on the account's live IP allowlist, a live token is sent from a web page (the API console works with test tokens only), or a sandbox endpoint is called with live credentials. */
+        /** @description The token lacks the scope, the account is on hold, a live token is used from an IP address that isn't on the account's live IP allowlist, a live token is sent from a web page (the API console works with test tokens only), a sandbox endpoint is called with live credentials, or (address search) the account has used its searches or Reeds has switched address search off for it. */
         Forbidden: {
             headers: {
                 [name: string]: unknown;
@@ -1636,7 +1775,7 @@ export interface components {
                 "application/json": components["schemas"]["Error"];
             };
         };
-        /** @description Rate limit reached, or (on `POST /quotes`, the endpoint that looks up addresses and prices a route) the account has used its daily allowance for address lookups and pricing, which resets at midnight Lagos time. Both are `RATE_LIMITED`; the message says which. Wait `Retry-After` seconds (for the daily allowance, until midnight in Lagos). */
+        /** @description Rate limit reached, or (on `POST /quotes` and the address search, the endpoints that look up addresses) the account has used its daily allowance for address lookups and pricing, which resets at midnight Lagos time. Both are `RATE_LIMITED`; the message says which. Wait `Retry-After` seconds (for the daily allowance, until midnight in Lagos). */
         TooManyRequests: {
             headers: {
                 "Retry-After": components["headers"]["RetryAfter"];
@@ -1885,6 +2024,166 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["ServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    autocompleteAddresses: {
+        parameters: {
+            query: {
+                /**
+                 * @description What the customer has typed, 1 to 200 characters.
+                 * @example 23 Allen Avenue
+                 */
+                query: string;
+                /**
+                 * @description Your token for this search: 8 to 36 letters, digits, hyphens or underscores (a UUID works). The same on every call while one address is typed, so the search counts once.
+                 * @example 3f2c8d1e-7b4a-4c55-9e0d-2a6b1f9c8e70
+                 */
+                session_token: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The suggestions, best first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "success",
+                     *       "data": {
+                     *         "suggestions": [
+                     *           {
+                     *             "place_id": "ChIJN1t_tDeuEmsRUsoyG83frY4",
+                     *             "main_text": "23 Allen Avenue",
+                     *             "secondary_text": "Ikeja, Lagos, Nigeria"
+                     *           },
+                     *           {
+                     *             "place_id": "ChIJ8TQy0JKLOxARmZ9bJc2sVkA",
+                     *             "main_text": "Allen Avenue Roundabout",
+                     *             "secondary_text": "Ikeja, Lagos, Nigeria"
+                     *           }
+                     *         ]
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PlaceSuggestionsEnvelope"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationFailed"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["ServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    getAddressDetails: {
+        parameters: {
+            query: {
+                /**
+                 * @description The `place_id` of a suggestion, or any Google place id. Not a Reeds address id (`adr_`): those name a delivery's stops.
+                 * @example ChIJN1t_tDeuEmsRUsoyG83frY4
+                 */
+                place_id: string;
+                /**
+                 * @description The token of the search this place was chosen in.
+                 * @example 3f2c8d1e-7b4a-4c55-9e0d-2a6b1f9c8e70
+                 */
+                session_token?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The place. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "success",
+                     *       "data": {
+                     *         "place_id": "ChIJN1t_tDeuEmsRUsoyG83frY4",
+                     *         "name": "23 Allen Avenue",
+                     *         "formatted_address": "23 Allen Ave, Allen, Ikeja 101233, Lagos, Nigeria",
+                     *         "area": "Ikeja",
+                     *         "lga": "Ikeja",
+                     *         "state": "Lagos",
+                     *         "country": "NG",
+                     *         "latitude": 6.6018,
+                     *         "longitude": 3.3515,
+                     *         "precise": true
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PlaceEnvelope"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationFailed"];
+            429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["ServerError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    reverseGeocodeAddress: {
+        parameters: {
+            query: {
+                /** @example 6.6018 */
+                latitude: number;
+                /** @example 3.3515 */
+                longitude: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The address at that spot. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "success",
+                     *       "data": {
+                     *         "place_id": "ChIJN1t_tDeuEmsRUsoyG83frY4",
+                     *         "name": "23 Allen Ave",
+                     *         "formatted_address": "23 Allen Ave, Allen, Ikeja 101233, Lagos, Nigeria",
+                     *         "area": "Ikeja",
+                     *         "lga": "Ikeja",
+                     *         "state": "Lagos",
+                     *         "country": "NG",
+                     *         "latitude": 6.6018,
+                     *         "longitude": 3.3515,
+                     *         "precise": true
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PlaceEnvelope"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["ValidationFailed"];
             429: components["responses"]["TooManyRequests"];
             500: components["responses"]["ServerError"];
             503: components["responses"]["ServiceUnavailable"];

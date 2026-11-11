@@ -2,6 +2,9 @@ import type { Core, FileResponse, RequestOptions } from "../../core/client";
 import { PermissionDeniedError } from "../../core/errors";
 import type { PagePromise } from "../../core/pagination";
 import type {
+  AddressAutocompleteParams,
+  AddressDetailsParams,
+  AddressReverseParams,
   Coverage,
   Delivery,
   DeliveryCancelParams,
@@ -10,6 +13,8 @@ import type {
   DeliveryUpdateParams,
   Invoice,
   InvoiceListParams,
+  Place,
+  PlaceSuggestions,
   Quote,
   QuoteRequest,
   QuoteUnavailable,
@@ -33,6 +38,35 @@ export class Coverages {
   /** The states, zones and inter-state routes Reeds serves. */
   get(options?: RequestOptions): Promise<Coverage> {
     return this.core.get(at("coverage"), undefined, options);
+  }
+}
+
+/**
+ * Address search: suggestions as a customer types, the address of the one they
+ * pick, and the address at a map pin. Free, within the account's allowance
+ * (403 ADDRESS_SEARCH_LIMIT_REACHED past it, 403 ADDRESS_SEARCH_DISABLED when
+ * Reeds has switched it off).
+ */
+export class Addresses {
+  constructor(private readonly core: Core) {}
+
+  /**
+   * Suggests places in Nigeria for what has been typed so far. Send the same
+   * `session_token` on every call while one address is typed, and on the
+   * `details` call that ends it: the whole search counts once.
+   */
+  autocomplete(params: AddressAutocompleteParams, options?: RequestOptions): Promise<PlaceSuggestions> {
+    return this.core.get(at("addresses", "autocomplete"), params, options);
+  }
+
+  /** The full address of a suggestion (or any Google place id in Nigeria). Pass the search's `session_token` to end that search. */
+  details(params: AddressDetailsParams, options?: RequestOptions): Promise<Place> {
+    return this.core.get(at("addresses", "details"), params, options);
+  }
+
+  /** The address nearest a map pin. Each call is one search. */
+  reverse(params: AddressReverseParams, options?: RequestOptions): Promise<Place> {
+    return this.core.get(at("addresses", "reverse"), params, options);
   }
 }
 
@@ -152,6 +186,7 @@ export class Sandbox {
 /** The Shipping API: `reeds.shipping`. */
 export class Shipping {
   readonly coverage: Coverages;
+  readonly addresses: Addresses;
   readonly quotes: Quotes;
   readonly deliveries: Deliveries;
   readonly wallet: WalletResource;
@@ -160,6 +195,7 @@ export class Shipping {
 
   constructor(core: Core) {
     this.coverage = new Coverages(core);
+    this.addresses = new Addresses(core);
     this.quotes = new Quotes(core);
     this.deliveries = new Deliveries(core);
     this.wallet = new WalletResource(core);

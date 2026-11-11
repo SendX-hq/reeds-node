@@ -101,3 +101,35 @@ export function isDone(delivery: Delivery): boolean {
 }
 
 export type ReadmeTypes = [Quote, QuoteRequest, ShippingEvent];
+
+// README "Address search" (0.2.0).
+import { randomUUID } from "node:crypto";
+import type { Place, PlaceSuggestion, PlaceSuggestions } from "../src/shipping";
+
+export async function addressSearch(): Promise<void> {
+  const reeds = new Reeds();
+
+  // One session token per address being typed: the same on every call while it's typed, and on the details call.
+  // The whole search then counts as one. Start a new token for the next address.
+  const session_token = randomUUID();
+
+  const { suggestions } = await reeds.shipping.addresses.autocomplete({ query: "23 Allen Avenue", session_token });
+  // Show suggestions[].main_text and secondary_text (at most 6, best first). Your customer picks one:
+  const place = await reeds.shipping.addresses.details({ place_id: suggestions[0]!.place_id, session_token });
+
+  // Google names no LGA for some places: ask your customer then, because a quote needs it.
+  if (!place.lga) throw new Error("Ask your customer for the LGA.");
+
+  const quote = await reeds.shipping.quotes.create({
+    pickup: { name: "Tola Fabrics", phone: "08051234567", address: place.formatted_address, area: place.area ?? undefined, lga: place.lga, state: place.state, place_id: place.place_id },
+    dropoff: { name: "Chinedu Eze", phone: "08098765432", address: "14 Admiralty Way", area: "Lekki Phase 1", lga: "Eti-Osa", state: "Lagos" },
+    package: { description: "2 pairs of sneakers", quantity: 1, weight_kg: 1.5 },
+  });
+
+  // A map pin: the address Google finds nearest it, the same shape as `place`. Each pin is one search.
+  const found = await reeds.shipping.addresses.reverse({ latitude: 6.6018, longitude: 3.3515 });
+
+  // The exported types line up with what the calls return.
+  const typed: [PlaceSuggestions, PlaceSuggestion | undefined, Place, Place] = [{ suggestions }, suggestions[0], place, found];
+  console.log(quote.available, found.precise, typed.length);
+}

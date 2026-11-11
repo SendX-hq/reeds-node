@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0 (2026-11-11)
+
+- Address search: `reeds.shipping.addresses.autocomplete({ query, session_token })` suggests addresses as your customer types, `addresses.details({ place_id, session_token })` gives the full address of the one they pick, and `addresses.reverse({ latitude, longitude })` the address at a map pin. Each answer has the `lga`, `state` and `place_id` a quote needs. New types: `Place`, `PlaceSuggestion`, `PlaceSuggestions` and the three params types.
+- A search past the account's allowance, or with address search switched off, throws `PermissionDeniedError` with code `ADDRESS_SEARCH_LIMIT_REACHED` or `ADDRESS_SEARCH_DISABLED`.
+- Types generated from the Shipping API's OpenAPI spec as of 2026-11-11.
+
 ## 0.1.3 (2026-11-10)
 
 - A fuller README: the services the library covers, every Shipping call, delivery statuses, webhook events, errors, retries and TypeScript use.

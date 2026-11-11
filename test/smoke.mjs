@@ -26,6 +26,7 @@ const server = createServer((req, res) => {
     };
     if (url.pathname === "/oauth/token") return send(200, { access_token: "tok_smoke", token_type: "Bearer", expires_in: 3600, scope: "shipping", livemode: false });
     if (url.pathname === "/shipping/v1/coverage") return send(200, { status: "success", data: { states: [{ name: "Lagos" }] } });
+    if (url.pathname === "/shipping/v1/addresses/details") return send(200, { status: "success", data: { place_id: url.searchParams.get("place_id"), lga: "Ikeja", state: "Lagos" } });
     if (url.pathname === "/shipping/v1/deliveries" && req.method === "POST") {
       if (busy) {
         busy = false;
@@ -49,6 +50,10 @@ try {
 
   const coverage = await reeds.shipping.coverage.get();
   assert.equal(coverage.states[0].name, "Lagos");
+
+  const place = await reeds.shipping.addresses.details({ place_id: "ChIJN1t_tDeuEmsRUsoyG83frY4", session_token: "3f2c8d1e-7b4a-4c55" });
+  assert.equal(place.lga, "Ikeja");
+  assert.equal(seen.find((call) => call.path === "/shipping/v1/addresses/details").search, "?place_id=ChIJN1t_tDeuEmsRUsoyG83frY4&session_token=3f2c8d1e-7b4a-4c55");
 
   const made = await reeds.shipping.deliveries.create({ quote_id: "qt_1", ready: true });
   assert.equal(made.id, "dlv_1");

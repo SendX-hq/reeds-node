@@ -21,6 +21,9 @@ const reeds = new Reeds({ clientId: "rci_test_x", clientSecret: "rcs_test_x" });
 const SHIPPING_METHODS: Record<string, unknown> = {
   createAccessToken: "core",
   getCoverage: reeds.shipping.coverage.get,
+  autocompleteAddresses: reeds.shipping.addresses.autocomplete,
+  getAddressDetails: reeds.shipping.addresses.details,
+  reverseGeocodeAddress: reeds.shipping.addresses.reverse,
   createQuote: reeds.shipping.quotes.create,
   createDelivery: reeds.shipping.deliveries.create,
   listDeliveries: reeds.shipping.deliveries.list,

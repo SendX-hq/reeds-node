@@ -5,6 +5,16 @@ type S = components["schemas"];
 type QueryOf<O extends keyof operations> = NonNullable<operations[O]["parameters"]["query"]>;
 
 export type Coverage = S["Coverage"];
+
+/** One address suggestion: pass its `place_id` to `addresses.details`, or as a quote's `place_id`. */
+export type PlaceSuggestion = S["PlaceSuggestion"];
+/** `GET /addresses/autocomplete`: the suggestions, best first (at most 6; empty when nothing matched). */
+export type PlaceSuggestions = NonNullable<S["PlaceSuggestionsEnvelope"]["data"]>;
+/** An address found by `addresses.details` or `addresses.reverse`, with what a quote needs. */
+export type Place = S["Place"];
+export type AddressAutocompleteParams = QueryOf<"autocompleteAddresses">;
+export type AddressDetailsParams = QueryOf<"getAddressDetails">;
+export type AddressReverseParams = QueryOf<"reverseGeocodeAddress">;
 export type QuoteRequest = S["QuoteRequest"];
 export type Quote = S["Quote"];
 export type QuoteUnavailable = S["QuoteUnavailable"];

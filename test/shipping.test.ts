@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Page, PermissionDeniedError } from "../src/index";
-import { delivery, fakeApi, json, success } from "./helpers";
+import { delivery, fakeApi, failure, json, success } from "./helpers";
 
 const pickup = { name: "Tola Fabrics", phone: "08051234567", address: "23 Allen Avenue", lga: "Ikeja", state: "Lagos" };
 const dropoff = { name: "Chinedu Eze", phone: "08098765432", address: "14 Admiralty Way", lga: "Eti-Osa", state: "Lagos" };
@@ -14,6 +14,9 @@ describe("reeds.shipping: every operation's request", () => {
     });
     const s = api.client().shipping;
     await s.coverage.get();
+    await s.addresses.autocomplete({ query: "23 Allen Avenue", session_token: "3f2c8d1e-7b4a-4c55-9e0d-2a6b1f9c8e70" });
+    await s.addresses.details({ place_id: "ChIJN1t_tDeuEmsRUsoyG83frY4", session_token: "3f2c8d1e-7b4a-4c55-9e0d-2a6b1f9c8e70" });
+    await s.addresses.reverse({ latitude: 6.6018, longitude: 3.3515 });
     await s.quotes.create({ pickup, dropoff, package: { weight_kg: 2 } } as never);
     await s.deliveries.create({ quote_id: "qt_1", reference: "ORDER-1", ready: false });
     await s.deliveries.list({ status: "scheduled", ids: ["dlv_1", "dlv_2"], limit: 10 });
@@ -36,6 +39,9 @@ describe("reeds.shipping: every operation's request", () => {
     const seen = api.apiCalls().map((call) => `${call.method} ${call.url.pathname}${call.url.search}${call.body ? ` ${call.body}` : ""}`);
     expect(seen).toEqual([
       "GET /shipping/v1/coverage",
+      "GET /shipping/v1/addresses/autocomplete?query=23+Allen+Avenue&session_token=3f2c8d1e-7b4a-4c55-9e0d-2a6b1f9c8e70",
+      "GET /shipping/v1/addresses/details?place_id=ChIJN1t_tDeuEmsRUsoyG83frY4&session_token=3f2c8d1e-7b4a-4c55-9e0d-2a6b1f9c8e70",
+      "GET /shipping/v1/addresses/reverse?latitude=6.6018&longitude=3.3515",
       `POST /shipping/v1/quotes ${JSON.stringify({ pickup, dropoff, package: { weight_kg: 2 } })}`,
       'POST /shipping/v1/deliveries {"quote_id":"qt_1","reference":"ORDER-1","ready":false}',
       "GET /shipping/v1/deliveries?status=scheduled&ids=dlv_1%2Cdlv_2&limit=10",
@@ -62,6 +68,56 @@ describe("reeds.shipping: every operation's request", () => {
     const api = fakeApi(() => success({}));
     await api.client().shipping.deliveries.get("dlv_1/../wallet");
     expect(api.apiCalls()[0]!.url.pathname).toBe("/shipping/v1/deliveries/dlv_1%2F..%2Fwallet");
+  });
+});
+
+describe("addresses", () => {
+  const TOKEN = "3f2c8d1e-7b4a-4c55-9e0d-2a6b1f9c8e70";
+  const place = {
+    place_id: "ChIJN1t_tDeuEmsRUsoyG83frY4",
+    name: "23 Allen Avenue",
+    formatted_address: "23 Allen Ave, Allen, Ikeja 101233, Lagos, Nigeria",
+    area: "Ikeja",
+    lga: "Ikeja",
+    state: "Lagos",
+    country: "NG",
+    latitude: 6.6018,
+    longitude: 3.3515,
+    precise: true,
+  };
+
+  it("returns the suggestions and the place themselves, out of data", async () => {
+    const suggestions = [{ place_id: place.place_id, main_text: "23 Allen Avenue", secondary_text: "Ikeja, Lagos, Nigeria" }];
+    const api = fakeApi((call) => (call.url.pathname.endsWith("/autocomplete") ? success({ suggestions }) : success(place)));
+    const s = api.client().shipping;
+    expect(await s.addresses.autocomplete({ query: "23 Allen", session_token: TOKEN })).toEqual({ suggestions });
+    expect(await s.addresses.details({ place_id: place.place_id, session_token: TOKEN })).toEqual(place);
+    expect(await s.addresses.reverse({ latitude: 6.6018, longitude: 3.3515 })).toEqual(place);
+    // Reads: no Idempotency-Key on any of them.
+    expect(api.apiCalls().map((call) => [call.method, call.headers["idempotency-key"]])).toEqual([["GET", undefined], ["GET", undefined], ["GET", undefined]]);
+  });
+
+  it("leaves session_token out of details when there is none", async () => {
+    const api = fakeApi(() => success(place));
+    await api.client().shipping.addresses.details({ place_id: place.place_id });
+    expect(api.apiCalls()[0]!.url.search).toBe(`?place_id=${place.place_id}`);
+  });
+
+  it("sends a pin's coordinates as plain decimals", async () => {
+    const api = fakeApi(() => success(place));
+    await api.client().shipping.addresses.reverse({ latitude: 9.0765, longitude: 7.398574 });
+    expect(api.apiCalls()[0]!.url.search).toBe("?latitude=9.0765&longitude=7.398574");
+  });
+
+  it("answers a search past the allowance, or switched off, with PermissionDeniedError and no retry", async () => {
+    for (const code of ["ADDRESS_SEARCH_LIMIT_REACHED", "ADDRESS_SEARCH_DISABLED"]) {
+      const api = fakeApi(() => failure(403, code));
+      const error = (await api.client().shipping.addresses.autocomplete({ query: "23 Allen", session_token: TOKEN }).catch((e: unknown) => e)) as PermissionDeniedError;
+      expect(error).toBeInstanceOf(PermissionDeniedError);
+      expect(error.code).toBe(code);
+      expect(error.status).toBe(403);
+      expect(api.apiCalls()).toHaveLength(1);
+    }
   });
 });
 
